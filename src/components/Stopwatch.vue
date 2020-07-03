@@ -2,15 +2,20 @@
    <div class="container">
       <h1>{{ msg }}</h1>
 
+      <input type="time" v-model="timer" @change="setTimer()" hidden>
+
       <div class="stopwatch"></div>
 
-      <button class="button" @click="start()">Start</button>
-      <button class="button" @click="stop()">Stop</button>
-      <button class="button" @click="restart()">Reset</button>
-      <button class="button" @click="lap()">Lap</button>
-      <button class="button" @click="clear()">Clear Laps</button>
-		
-	<ul class="results"></ul>
+      <button class="button start" @click="start()">Start</button>
+      <button class="button stop" @click="stop()">Stop</button>
+      <button class="button reset" @click="restart()">Reset</button>
+      <button class="button lap" @click="lap()">Lap</button>
+      <button class="button clear" @click="clear()">Clear</button>
+
+      <div class="laps">
+         <ul class="results"></ul>
+      </div>
+	
    </div>
 </template>
 
@@ -27,23 +32,32 @@ export default {
          results: null,
          times: [],
          laps: [],
+         timer: [],
       }
    },
    methods: {
       reset: function() { 
-         this.times = [ 0, 0, 0];
+         this.times = [ 0, 0, 0 ];
+         this.timer = [];
       },
     
-      start: function() {
-         if (!this.time) this.time = performance.now();
-         
+      start: function() {     
+         if (!this.time) {
+            this.time = performance.now();
+         }
          
          if (!this.running) {
-            
             this.running = true;
-            
             requestAnimationFrame(this.step.bind(this));
          }
+      },
+
+      setTimer: function() {
+         console.log(this.times);
+         
+         const unformatted = this.format( [ '0' , this.timer ] ).trim().split(':');
+         const formatted = `${unformatted[0]}: ${unformatted[1]}: ${unformatted[2]}`;
+         this.display.innerText = formatted;
       },
     
       lap: function() {
@@ -61,7 +75,7 @@ export default {
       restart: function() {
         this.stop();
         this.reset();
-        this.print(this.times);
+        this.print();
         
       },
     
@@ -132,9 +146,8 @@ export default {
 .container {
   padding: 20px;
   text-align: center;
-  position: fixed;
+  justify-items: center;
   top: 1em;
-  width: 100%;
 }
 
 .button {
@@ -143,38 +156,72 @@ export default {
   font-size: 20px;
   border-radius: 50%;
   display: inline-flex;
+  justify-content: center;
+  align-items: center;
   width: 70px;
   height: 70px;
+  color: #fff;
 }
 
-.button:first-child {
-    margin-left: 0;
+.start {
+   background-color: #4caf50;
 }
 
-.button:last-child {
-    margin-right: 0;
+.start:hover {
+   background-color: #81c784;
 }
 
-.button:hover {
-  color: white;
+.stop {
+   background-color: #f44336;
+}
+
+.stop:hover {
+   background-color: #e57373;
+}
+
+.reset {
+   background-color: #2196f3;
+}
+
+.reset:hover {
+   background-color: #64b5f6;
+}
+
+.lap {
+   background-color: #e07d2c;
+}
+
+.lap:hover {
+   background-color: #e09150;
+}
+
+.clear {
+   background-color: #634b48;
+}
+
+.clear:hover {
+   background-color: #5f5c5b;
 }
 
 .stopwatch {
   font-size: 50px;
   text-align: center;
-  margin-bottom: 30px;
+  margin-bottom: 60px;
   color: #555
 }
 
+.laps {
+   display: flex;
+   flex-direction: column;
+   align-content: center;
+   justify-content: center;
+   width: 280px;
+   margin: auto;
+}
+
 .results {
-  border-color: lime;
   list-style: none;
-  margin: 0;
-  padding: 0;
-  position: absolute;
-  bottom: 0;
-  left: 50%;
-  transform: translateX(-50%);
+  font-size: 30px
 }
 
 </style>
