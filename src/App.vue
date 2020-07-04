@@ -11,7 +11,11 @@ export default {
    name: 'App',
    components: {
       Stopwatch,
-   },
+   },data: function () {
+      return {
+         key: 0,
+      }
+   }
 };
 </script>
 

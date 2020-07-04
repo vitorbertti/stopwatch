@@ -2,15 +2,19 @@
    <div class="container">
       <h1>{{ msg }}</h1>
 
-      <input type="time" v-model="timer" @change="setTimer()" hidden>
+      <label id="timerLabel" for="timer" hidden>Timer in minutes</label>
+      <select id="timer" v-model="timer" @change="setTimer()" hidden>
+         <option v-for="index in 60" :key="index" v-bind:timer="timer" >{{ index }}</option>
+      </select>
 
-      <div class="stopwatch"></div>
+      <div id="time" class="stopwatch"></div>
 
-      <button class="button start" @click="start()">Start</button>
-      <button class="button stop" @click="stop()">Stop</button>
-      <button class="button reset" @click="restart()">Reset</button>
-      <button class="button lap" @click="lap()">Lap</button>
-      <button class="button clear" @click="clear()">Clear</button>
+      <button id="start" class="button start" @click="start()" >Start</button>
+      <button id="stop" class="button stop" @click="stop()">Stop</button>
+      <button id="restart" class="button reset" @click="restart()">Reset</button>
+      <button id="lap" class="button lap" @click="lap()">Lap</button>
+      <button id="clear" class="button clear" @click="clear()">Clear</button>
+      <button id="timerDisplay" class="button timer" @click="setTimerDisplay()">Timer</button>
 
       <div class="laps">
          <ul class="results"></ul>
@@ -33,6 +37,7 @@ export default {
          times: [],
          laps: [],
          timer: [],
+         timerDisplay: false,
       }
    },
    methods: {
@@ -41,8 +46,14 @@ export default {
          this.timer = [];
       },
     
-      start: function() {     
-         if (!this.time) {
+      start: function() {    
+         if(this.timer.length) {
+            const show = document.querySelector('#time');
+            this.startTimer(this.timer, show);
+            return;
+         }
+
+         else if (!this.time) {
             this.time = performance.now();
          }
          
@@ -52,12 +63,32 @@ export default {
          }
       },
 
-      setTimer: function() {
-         console.log(this.times);
-         
+      setTimer: function() { 
          const unformatted = this.format( [ '0' , this.timer ] ).trim().split(':');
-         const formatted = `${unformatted[0]}: ${unformatted[1]}: ${unformatted[2]}`;
+         const formatted = `${unformatted[0]}: ${unformatted[1]}: 00`;
          this.display.innerText = formatted;
+      },
+
+      startTimer: function(time, display) { 
+         
+         const duration = time * 60;
+         let timer = duration, minutes, seconds;
+         let execution = false;
+         setInterval(function () {
+            if(execution) return;   
+            
+            minutes = parseInt(timer / 60, 10);
+            seconds = parseInt(timer % 60, 10);
+
+            minutes = minutes < 10 ? "0" + minutes : minutes;
+            seconds = seconds < 10 ? "0" + seconds : seconds;
+
+            display.textContent = "00: " + minutes + ": " + seconds;
+
+            if (--timer < 0) {
+               execution = true;
+            }
+         }, 1000);
       },
     
       lap: function() {
@@ -70,6 +101,11 @@ export default {
       stop: function() {
          this.running = false;
          this.time = null;
+         this.pause = true;
+         this.timer = [];
+         const show = document.querySelector('#time');
+         this.startTimer(this.timer, show);
+         return;    
       },
 
       restart: function() {
@@ -128,6 +164,31 @@ export default {
       clearChildren: function(node) {
         while (node.lastChild)
            node.removeChild(node.lastChild);
+      },
+
+      setTimerDisplay: function() {
+         if(!this.timerDisplay) {
+            document.querySelector('#timerLabel').hidden = false;
+            document.querySelector('#timer').hidden = false;
+
+            document.querySelector('#stop').style.display = "none";
+            document.querySelector('#restart').style.display = "none";
+            document.querySelector('#lap').style.display = "none";
+            document.querySelector('#clear').style.display = "none";
+            document.querySelector('#timerDisplay').innerHTML = 'Back';
+            this.timerDisplay = !this.timerDisplay;
+         }else{
+            document.querySelector('#timerLabel').hidden = true;
+            document.querySelector('#timer').hidden = true;
+
+            document.querySelector('#stop').style.display = "inline";
+            document.querySelector('#restart').style.display = "inline";
+            document.querySelector('#lap').style.display = "inline";
+            document.querySelector('#clear').style.display = "inline";
+            document.querySelector('#timerDisplay').innerHTML = 'Timer';
+            this.timerDisplay = !this.timerDisplay;
+         }
+        
       }
    },
       
@@ -201,6 +262,14 @@ export default {
 
 .clear:hover {
    background-color: #5f5c5b;
+}
+
+.timer {
+   background-color: #000000;
+}
+
+.timer:hover {
+   background-color: #222222;
 }
 
 .stopwatch {
